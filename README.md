@@ -1,4 +1,4 @@
-![test](https://teamhava-dev.atlassian.net/wiki/spaces/HOME/pages/196831/Hava+Viewer)
+![test](https://embed.hava.io/406336e3-e3ae-424a-87a5-32a8b0d82838.png)
 
 # Create a JavaScript Action
 
