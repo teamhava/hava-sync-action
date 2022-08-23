@@ -1,13 +1,29 @@
-name: 'Wait'
-description: 'Wait a designated number of milliseconds'
+name: 'hava-generate'
+description: 'Import changes and generate a new png architecture diagram for your documentation'
 inputs:
-  milliseconds:  # id of input
-    description: 'number of milliseconds to wait'
+  source_id:  # id of input
+    description: 'ID of the Hava source to refresh'
     required: true
-    default: '1000'
+    default: ''
+  view_id:
+    description: 'ID of the Hava view to generate png archicture diagram from'
+    required: true
+    default: ''
+  hava_token:
+    description: 'API token to access the Hava API'
+    required: true
+    default: ''
+  image_path:
+    description: 'Path to export image to'
+    required: false
+    default: 'docs/architecture.png'
+  export:
+    description: 'If export is to run, if false, it will only run export'
+    required: false
+    default: false
 outputs:
-  time: # output will be available to future steps
-    description: 'The current time after waiting'
+  path:
+    description: 'Path to the architecture image file'
 runs:
   using: 'node16'
   main: 'dist/index.js'
