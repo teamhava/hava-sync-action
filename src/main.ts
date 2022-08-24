@@ -2,6 +2,7 @@ import {HavaSync} from './sync'
 import {HavaExporter, ExporterOptions} from './export'
 import * as core from '@actions/core'
 import {HavaResult} from './types'
+import {validateUserInput} from './helpers'
 
 // most @actions toolkit packages have async methods
 async function run(): Promise<void> {
@@ -12,13 +13,29 @@ async function run(): Promise<void> {
   const imagePath: string = core.getInput('image_path')
   const skipExport: boolean = core.getBooleanInput('skip_export')
 
+  const validationResult = validateUserInput(
+    sourceId,
+    environmentId,
+    viewType,
+    havaToken,
+    imagePath,
+    skipExport
+  )
+
+  if (!validationResult.Success) {
+    core.setFailed(validationResult.Message)
+    return
+  }
+
   const sync: HavaSync = new HavaSync()
 
   const syncResult: HavaResult = await sync.syncSource(sourceId, havaToken)
 
+  core.setOutput('path', imagePath)
+
   if (!syncResult.Success) {
     core.setFailed(syncResult.Message)
-    process.exitCode = core.ExitCode.Failure
+    return
   }
 
   if (!skipExport) {
@@ -36,8 +53,6 @@ async function run(): Promise<void> {
       core.setFailed(expResult.Message)
     }
   }
-
-  core.setOutput('path', imagePath)
 }
 
 run()

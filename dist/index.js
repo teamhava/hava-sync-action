@@ -49,16 +49,6 @@ const helpers_1 = __nccwpck_require__(8);
 const fs_1 = __nccwpck_require__(747);
 const path_1 = __importDefault(__nccwpck_require__(622));
 class HavaExporter {
-    constructor() {
-        /**
-         * Static map representing supported view types for export and their mapping to real hava view types
-         */
-        this.viewTypeMap = new Map([
-            ['infrastructure', 'Views::Infrastructure'],
-            ['security', 'Views::Security'],
-            ['container', 'Views::Container']
-        ]);
-    }
     /**
      * Exports an environment as a png image
      * @param options Options for the exporter, see ExporterOptions for details
@@ -66,12 +56,6 @@ class HavaExporter {
      */
     export(options) {
         return __awaiter(this, void 0, void 0, function* () {
-            core.info('Validating input');
-            const validationResult = this.validateViewType(options.ViewType);
-            if (!validationResult.Success) {
-                return validationResult;
-            }
-            core.info('Input valid');
             core.info('Starting export');
             let client = new http.HttpClient();
             client.requestOptions = {
@@ -133,6 +117,12 @@ class HavaExporter {
     getEnvironmentViewId(environmentID, viewType, client) {
         return __awaiter(this, void 0, void 0, function* () {
             const result = yield client.get(`https://api.hava.io/environments/${environmentID}`);
+            if (result.message.statusCode === 401) {
+                return {
+                    Success: false,
+                    Message: `Unauthorized returned by the API, is the API token valid?`
+                };
+            }
             if (result.message.statusCode === 404) {
                 return {
                     Success: false,
@@ -146,7 +136,7 @@ class HavaExporter {
                 };
             }
             const environment = JSON.parse(yield result.readBody());
-            const views = environment.views.filter((x) => x.type === this.viewTypeMap.get(viewType));
+            const views = environment.views.filter((x) => x.type === helpers_1.ViewTypeMap.get(viewType));
             if (views.length < 1) {
                 return {
                     Success: false,
@@ -177,6 +167,12 @@ class HavaExporter {
                 labels: false
             };
             const result = yield client.post(`https://api.hava.io/views/${viewId}/export`, JSON.stringify(exportRequestBody), { 'Content-Type': 'application/json' });
+            if (result.message.statusCode === 401) {
+                return {
+                    Success: false,
+                    Message: `Unauthorized returned by the API, is the API token valid?`
+                };
+            }
             if (result.message.statusCode === 404) {
                 return {
                     Success: false,
@@ -205,21 +201,6 @@ class HavaExporter {
             }
             return { Success: true, Message: jobWaitResult.Message };
         });
-    }
-    /**
-     * Case-sentive validation of supported view types
-     *
-     *  @param viewType name of the view to validate
-     *  @return true if a valid view type, false otherwise
-     */
-    validateViewType(viewType) {
-        if (!this.viewTypeMap.has(viewType)) {
-            const message = `View type '${viewType}' not known, supported values are: ${[
-                ...this.viewTypeMap.keys()
-            ].join(',')}`;
-            return { Success: false, Message: message };
-        }
-        return { Success: true, Message: '' };
     }
 }
 exports.HavaExporter = HavaExporter;
@@ -265,9 +246,18 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.waitForJob = void 0;
+exports.checkIfValidPath = exports.validateUserInput = exports.validateViewType = exports.waitForJob = exports.ViewTypeMap = void 0;
 const http_client_1 = __nccwpck_require__(255);
 const core = __importStar(__nccwpck_require__(186));
+/**
+ * Static map representing supported view types for export and their mapping to real hava view types
+ */
+const ViewTypeMap = new Map([
+    ['infrastructure', 'Views::Infrastructure'],
+    ['security', 'Views::Security'],
+    ['container', 'Views::Container']
+]);
+exports.ViewTypeMap = ViewTypeMap;
 /**
  * Waits for a job request to complete and returns the result
  *
@@ -297,6 +287,12 @@ function waitForJob(jobId, client) {
                 };
             }
             const result = yield newClient.get(jobUrl);
+            if (result.message.statusCode === 401) {
+                return {
+                    Success: false,
+                    Message: `Unauthorized returned by the API, is the API token valid?`
+                };
+            }
             if (result.message.statusCode === 200) {
                 const body = JSON.parse(yield result.readBody());
                 if (body.state !== 'active' && body.state !== 'queued') {
@@ -324,6 +320,111 @@ function waitForJob(jobId, client) {
     });
 }
 exports.waitForJob = waitForJob;
+/**
+ * Case-sentive validation of supported view types
+ *
+ *  @param viewType name of the view to validate
+ *  @return true if a valid view type, false otherwise
+ */
+function validateViewType(viewType) {
+    if (!ViewTypeMap.has(viewType)) {
+        const message = `View type '${viewType}' not known, supported values are: ${[
+            ...ViewTypeMap.keys()
+        ].join(',')}`;
+        return { Success: false, Message: message };
+    }
+    return { Success: true, Message: '' };
+}
+exports.validateViewType = validateViewType;
+/**
+ * Validates user input
+ * @param sourceId Hava Source ID to validate
+ * @param environmentId Hava Environment ID to validate
+ * @param viewType  Hava View type to validate
+ * @param havaToken  Hava Token to validate
+ * @param imagePath  Image Path to validate
+ * @param skipExport  impacts validation, if true, viewtype, environmentid and imagepath won't be validated
+ * @returns HavaResult object with Success= true on success, and false on failure with extra information in the message
+ */
+function validateUserInput(sourceId, environmentId, viewType, havaToken, imagePath, skipExport) {
+    core.info('Validating User Input');
+    let errorFound = false;
+    const errors = [];
+    if (!checkIfValidUUID(sourceId)) {
+        errorFound = true;
+        const msg = `Source Id '${sourceId}' is not well formed, shouild be a UUID`;
+        core.error(msg);
+        errors.push(msg);
+    }
+    if (!checkIfValidUUID(havaToken)) {
+        errorFound = true;
+        const msg = `Hava token is not well formed, should be a UUID`;
+        core.error(msg);
+        errors.push(msg);
+    }
+    if (!skipExport) {
+        if (!environmentId) {
+            errorFound = true;
+            const msg = `Environment Id is required when skip_export is false`;
+            core.error(msg);
+            errors.push(msg);
+        }
+        else if (!checkIfValidUUID(environmentId)) {
+            errorFound = true;
+            const msg = `Environment Id '${environmentId}' is not well formed, shouild be a UUID`;
+            core.error(msg);
+            errors.push(msg);
+        }
+        if (!viewType) {
+            errorFound = true;
+            const msg = `View type is required when skip_export is false`;
+            core.error(msg);
+            errors.push(msg);
+        }
+        else {
+            const viewTypeResuilt = validateViewType(environmentId);
+            if (!viewTypeResuilt.Success) {
+                errorFound = true;
+                core.error(viewTypeResuilt.Message);
+                errors.push(viewTypeResuilt.Message);
+            }
+        }
+        const pathResult = checkIfValidPath(imagePath);
+        if (!pathResult.Success) {
+            errorFound = true;
+            core.error(pathResult.Message);
+            errors.push(pathResult.Message);
+        }
+    }
+    if (errorFound) {
+        return {
+            Success: false,
+            Message: errors.join('\n')
+        };
+    }
+    core.info('Input Validation Complete!');
+    return { Success: true, Message: '' };
+}
+exports.validateUserInput = validateUserInput;
+function checkIfValidUUID(str) {
+    // Regular expression to check if string is a valid UUID
+    const regexExp = /^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/gi;
+    return regexExp.test(str);
+}
+function checkIfValidPath(path) {
+    const valid = /^.?[/A-Za-z0-9]+.png$/;
+    if (valid.test(path)) {
+        return {
+            Success: true,
+            Message: ''
+        };
+    }
+    return {
+        Success: false,
+        Message: 'Invalid path, please limit the path to alphanumeric characters and forward slash for folders'
+    };
+}
+exports.checkIfValidPath = checkIfValidPath;
 
 
 /***/ }),
@@ -369,6 +470,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const sync_1 = __nccwpck_require__(56);
 const export_1 = __nccwpck_require__(624);
 const core = __importStar(__nccwpck_require__(186));
+const helpers_1 = __nccwpck_require__(8);
 // most @actions toolkit packages have async methods
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
@@ -378,11 +480,17 @@ function run() {
         const havaToken = core.getInput('hava_token');
         const imagePath = core.getInput('image_path');
         const skipExport = core.getBooleanInput('skip_export');
+        const validationResult = (0, helpers_1.validateUserInput)(sourceId, environmentId, viewType, havaToken, imagePath, skipExport);
+        if (!validationResult.Success) {
+            core.setFailed(validationResult.Message);
+            return;
+        }
         const sync = new sync_1.HavaSync();
         const syncResult = yield sync.syncSource(sourceId, havaToken);
+        core.setOutput('path', imagePath);
         if (!syncResult.Success) {
             core.setFailed(syncResult.Message);
-            process.exitCode = core.ExitCode.Failure;
+            return;
         }
         if (!skipExport) {
             const exporter = new export_1.HavaExporter();
@@ -397,7 +505,6 @@ function run() {
                 core.setFailed(expResult.Message);
             }
         }
-        core.setOutput('path', imagePath);
     });
 }
 run();
@@ -464,6 +571,12 @@ class HavaSync {
                 }
             };
             const result = yield client.post(`https://api.hava.io/sources/${sourceId}/sync`, '{}');
+            if (result.message.statusCode === 401) {
+                return {
+                    Success: false,
+                    Message: `Unauthorized returned by the API, is the API token valid?`
+                };
+            }
             if (result.message.statusCode === 404) {
                 return {
                     Success: false,

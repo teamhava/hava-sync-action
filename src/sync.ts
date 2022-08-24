@@ -24,6 +24,13 @@ export class HavaSync {
       '{}'
     )
 
+    if (result.message.statusCode === 401) {
+      return {
+        Success: false,
+        Message: `Unauthorized returned by the API, is the API token valid?`
+      }
+    }
+
     if (result.message.statusCode === 404) {
       return {
         Success: false,

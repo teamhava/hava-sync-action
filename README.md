@@ -4,8 +4,29 @@ github action for integrating Hava with your github pipelines, allowing you to a
 
 ## Usage
 
-```yml
+To use the action in your own repository, include it as a step in your job
 
+```yml
+- uses: teamhava/hava-sync-action@v1
+  with:
+    source_id:
+    hava_token: 
+    environment_id: 
+    view_type:
+```
+
+An example of this action in use can be found in our [example repo](https://github.com/teamhava/example-github-action)
+
+### Usage without image generation
+
+At times you don't need to generate a new image, you only want to synchronize the lates changes to Hava. To support that you can set the `skip_export` variable to true. In these cases you will not need to set the `environment_id` or `view_type` variables.
+
+```yml
+- uses: teamhava/hava-sync-action@v1
+  with:
+    source_id:
+    hava_token: 
+    skip_export: true
 ```
 
 ## Input Options
