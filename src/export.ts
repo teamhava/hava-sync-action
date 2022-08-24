@@ -3,7 +3,8 @@ import {HavaResult, View} from './types'
 import * as core from '@actions/core'
 import * as http from '@actions/http-client'
 import {waitForJob} from './helpers'
-import {writeFileSync} from 'fs'
+import {existsSync, fstat, mkdirSync, writeFileSync} from 'fs'
+import path from 'path'
 
 /**
  * Options for export
@@ -84,6 +85,12 @@ export class HavaExporter {
     }
 
     const imgData = await this.getImageData(pngData)
+
+    const dirname = path.dirname(options.ImagePath)
+
+    if (!existsSync(dirname)) {
+      mkdirSync(dirname, {recursive: true})
+    }
 
     writeFileSync(options.ImagePath, imgData)
 

@@ -38,12 +38,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.HavaExporter = void 0;
 const core = __importStar(__nccwpck_require__(186));
 const http = __importStar(__nccwpck_require__(255));
 const helpers_1 = __nccwpck_require__(8);
 const fs_1 = __nccwpck_require__(747);
+const path_1 = __importDefault(__nccwpck_require__(622));
 class HavaExporter {
     constructor() {
         /**
@@ -98,6 +102,10 @@ class HavaExporter {
                 };
             }
             const imgData = yield this.getImageData(pngData);
+            const dirname = path_1.default.dirname(options.ImagePath);
+            if (!(0, fs_1.existsSync)(dirname)) {
+                (0, fs_1.mkdirSync)(dirname, { recursive: true });
+            }
             (0, fs_1.writeFileSync)(options.ImagePath, imgData);
             return exportResult;
         });
