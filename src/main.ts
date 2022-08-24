@@ -10,7 +10,7 @@ async function run(): Promise<void> {
   const viewType: string = core.getInput('view_type')
   const havaToken: string = core.getInput('hava_token')
   const imagePath: string = core.getInput('image_path')
-  const runExport: boolean = core.getBooleanInput('export')
+  const skipExport: boolean = core.getBooleanInput('skip_export')
 
   const sync: HavaSync = new HavaSync()
 
@@ -21,7 +21,7 @@ async function run(): Promise<void> {
     process.exitCode = core.ExitCode.Failure
   }
 
-  if (runExport) {
+  if (!skipExport) {
     const exporter = new HavaExporter()
     const expOptions: ExporterOptions = {
       EnvironmentID: environmentId,

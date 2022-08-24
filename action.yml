@@ -24,7 +24,7 @@ inputs:
   skip_export:
     description: "Allows you to skip exports if you don't require the generated diagram"
     required: false
-    default: false
+    default: 'false'
 outputs:
   path:
     description: 'Path to the architecture image file'
