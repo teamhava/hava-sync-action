@@ -2,7 +2,7 @@ name: 'hava-sync-action'
 description: 'Import changes and generate a new png architecture diagram for your documentation'
 inputs:
   source_id:
-    description: 'ID of the Hava source to refresh'
+    description: 'ID of the Hava source to synchronize'
     required: true
     default: ''
   hava_token:
