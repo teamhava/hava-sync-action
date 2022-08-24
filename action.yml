@@ -29,5 +29,5 @@ outputs:
   path:
     description: 'Path to the architecture image file'
 runs:
-  using: 'node18'
+  using: 'node16'
   main: 'dist/index.js'
