@@ -1,24 +1,28 @@
-name: 'hava-generate'
+name: 'hava-sync-action'
 description: 'Import changes and generate a new png architecture diagram for your documentation'
 inputs:
-  source_id:  # id of input
+  source_id:
     description: 'ID of the Hava source to refresh'
-    required: true
-    default: ''
-  view_id:
-    description: 'ID of the Hava view to generate png archicture diagram from'
     required: true
     default: ''
   hava_token:
     description: 'API token to access the Hava API'
     required: true
     default: ''
+  environment_id:
+    description: 'ID of the Hava environment to generate png archicture diagram from. (Optional if `skip_export` is true)'
+    required: false
+    default: ''
+  view_type:
+    description: 'Type of view to generate a png diagram for. Supported values: infrastructure, container, security. (Optional if `skip_export` is true)'
+    required: false
+    default: ''
   image_path:
     description: 'Path to export image to'
     required: false
     default: 'docs/architecture.png'
-  export:
-    description: 'If export is to run, if false, it will only run export'
+  skip_export:
+    description: 'Allows you to skip exports if you don't require the generated diagram'
     required: false
     default: false
 outputs:
