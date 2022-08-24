@@ -369,14 +369,14 @@ function run() {
         const viewType = core.getInput('view_type');
         const havaToken = core.getInput('hava_token');
         const imagePath = core.getInput('image_path');
-        const runExport = core.getBooleanInput('export');
+        const skipExport = core.getBooleanInput('skip_export');
         const sync = new sync_1.HavaSync();
         const syncResult = yield sync.syncSource(sourceId, havaToken);
         if (!syncResult.Success) {
             core.setFailed(syncResult.Message);
             process.exitCode = core.ExitCode.Failure;
         }
-        if (runExport) {
+        if (!skipExport) {
             const exporter = new export_1.HavaExporter();
             const expOptions = {
                 EnvironmentID: environmentId,
