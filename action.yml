@@ -22,7 +22,7 @@ inputs:
     required: false
     default: 'docs/architecture.png'
   skip_export:
-    description: 'Allows you to skip exports if you don't require the generated diagram'
+    description: "Allows you to skip exports if you don't require the generated diagram"
     required: false
     default: false
 outputs:
