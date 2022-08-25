@@ -1,5 +1,7 @@
 # Hava Github Action
 
+[![build-test](https://github.com/teamhava/hava-sync-action/actions/workflows/test.yml/badge.svg)](https://github.com/teamhava/hava-sync-action/actions/workflows/test.yml)
+
 github action for integrating Hava with your github pipelines, allowing you to automatically synchronize and export a diagram after you have deployed changes to your environment
 
 ## Usage
