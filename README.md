@@ -1,8 +1,14 @@
-# Hava Github Action
+# Hava Sync Action
 
 [![build-test](https://github.com/teamhava/hava-sync-action/actions/workflows/test.yml/badge.svg)](https://github.com/teamhava/hava-sync-action/actions/workflows/test.yml)
 
-github action for integrating Hava with your github pipelines, allowing you to automatically synchronize and export a diagram after you have deployed changes to your environment
+Github action for integrating Hava with your github pipelines, allowing you to automatically synchronize and export a diagram after you have deployed changes to your environment
+
+## What is Hava?
+
+Hava provides a single view across all you cloud environments, which allows you to quickly understand and diagnose issues. It provides a view of all your resources and automatically generate architecture diagrams for your environments. Automating away the tedious task of keeping documentation up to date. 
+
+See https://www.hava.io for more details
 
 ## Usage
 
@@ -21,7 +27,7 @@ An example of this action in use can be found in our [example repo](https://gith
 
 ### Usage without image generation
 
-At times you don't need to generate a new image, you only want to synchronize the lates changes to Hava. To support that you can set the `skip_export` variable to true. In these cases you will not need to set the `environment_id` or `view_type` variables.
+At times you don't need to generate a new image, you only want to synchronize the latest changes to Hava. To support that you can set the `skip_export` variable to true. In these cases you will not need to set the `environment_id` or `view_type` variables.
 
 ```yml
 - uses: teamhava/hava-sync-action@v1
