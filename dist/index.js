@@ -356,9 +356,9 @@ function validateUserInput(sourceId, environmentId, viewType, havaToken, imagePa
         core.error(msg);
         errors.push(msg);
     }
-    if (!checkIfValidUUID(havaToken)) {
+    if (!havaToken) {
         errorFound = true;
-        const msg = `Hava token is not well formed, should be a UUID`;
+        const msg = `Hava token is not set`;
         core.error(msg);
         errors.push(msg);
     }
@@ -382,7 +382,7 @@ function validateUserInput(sourceId, environmentId, viewType, havaToken, imagePa
             errors.push(msg);
         }
         else {
-            const viewTypeResuilt = validateViewType(environmentId);
+            const viewTypeResuilt = validateViewType(viewType);
             if (!viewTypeResuilt.Success) {
                 errorFound = true;
                 core.error(viewTypeResuilt.Message);

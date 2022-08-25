@@ -133,9 +133,9 @@ export function validateUserInput(
     errors.push(msg)
   }
 
-  if (!checkIfValidUUID(havaToken)) {
+  if (!havaToken) {
     errorFound = true
-    const msg = `Hava token is not well formed, should be a UUID`
+    const msg = `Hava token is not set`
     core.error(msg)
     errors.push(msg)
   }
@@ -159,7 +159,7 @@ export function validateUserInput(
       core.error(msg)
       errors.push(msg)
     } else {
-      const viewTypeResuilt = validateViewType(environmentId)
+      const viewTypeResuilt = validateViewType(viewType)
 
       if (!viewTypeResuilt.Success) {
         errorFound = true
